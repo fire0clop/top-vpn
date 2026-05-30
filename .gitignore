@@ -1,0 +1,60 @@
+# ---- Python / FastAPI backend ----
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+*.sqlite
+*.sqlite3
+
+# ---- Swift / Xcode (iOS + macOS) ----
+xcuserdata/
+DerivedData/
+build/
+*.xcuserstate
+*.xcscmblueprint
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+Pods/
+.swiftpm/
+# XcodeGen-generated projects (kept from project.yml); uncomment to ignore
+# *.xcodeproj/
+
+# ---- Apple signing / provisioning secrets ----
+*.p8
+*.p12
+*.pem
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile
+
+# ---- Large vendored binaries (must be fetched separately) ----
+Vendor/
+*.xcframework
+
+# ---- Node (tooling / privacy-policy) ----
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ---- Backups / archives ----
+*.bak
+*.tgz
+*.tar.gz
+*.zip
+
+# ---- OS / editor cruft ----
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
