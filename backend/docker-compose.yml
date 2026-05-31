@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: splitvpn_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-splitvpn}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-splitvpn}
+      POSTGRES_DB: ${POSTGRES_DB:-splitvpn}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-splitvpn}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - splitvpn_net
+
+  cache:
+    image: redis:7-alpine
+    container_name: splitvpn_cache
+    restart: always
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "no"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - splitvpn_net
+
+  api:
+    build: .
+    container_name: splitvpn_api
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-splitvpn}:${POSTGRES_PASSWORD:-splitvpn}@db:5432/${POSTGRES_DB:-splitvpn}
+      REDIS_URL: redis://cache:6379/0
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      DEBUG: ${DEBUG:-false}
+    ports:
+      - "${API_PORT:-8080}:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - splitvpn_net
+
+volumes:
+  pg_data:
+  redis_data:
+
+networks:
+  splitvpn_net:
+    driver: bridge
