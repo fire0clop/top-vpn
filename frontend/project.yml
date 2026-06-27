@@ -1,0 +1,83 @@
+name: SplitVPN
+options:
+  bundleIdPrefix: com.splitvpn
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  GRDB:
+    url: https://github.com/groue/GRDB.swift
+    from: "6.29.0"
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.9"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+    DEVELOPMENT_TEAM: "Z3PM3LR5FF"
+
+schemes:
+  SplitVPN:
+    build:
+      targets:
+        SplitVPN: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+
+targets:
+  SplitVPN:
+    type: application
+    platform: iOS
+    sources:
+      - path: SplitVPN
+      - path: Shared
+    dependencies:
+      - package: GRDB
+      - target: PacketTunnel
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.splitvpn.app
+        INFOPLIST_FILE: SplitVPN/Info.plist
+        CODE_SIGN_ENTITLEMENTS: SplitVPN/SplitVPN.entitlements
+        GENERATE_INFOPLIST_FILE: "NO"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_USER_SCRIPT_SANDBOXING: "YES"
+        # iPhone-only: иначе iPad-таргет требует все 4 ориентации (валидация App Store).
+        TARGETED_DEVICE_FAMILY: "1"
+
+  PacketTunnel:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PacketTunnel
+        excludes:
+          - Resources/blocked.srs
+          - Resources/blocked-ip.srs
+      - path: PacketTunnel/Resources/blocked.srs
+        buildPhase: resources
+      - path: PacketTunnel/Resources/blocked-ip.srs
+        buildPhase: resources
+      - path: Shared
+    dependencies:
+      - package: GRDB
+      # Libbox — статическая библиотека (ar archive): только линкуем, НЕ встраиваем.
+      # При embed:true статлибу копировало в appex/Frameworks → App Store её отвергает
+      # («standalone library not permitted», битый Info.plist). Линковка вшивает код в бинарь.
+      - framework: Vendor/Libbox.xcframework
+        embed: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.splitvpn.app.PacketTunnel
+        INFOPLIST_FILE: PacketTunnel/Info.plist
+        CODE_SIGN_ENTITLEMENTS: PacketTunnel/PacketTunnel.entitlements
+        GENERATE_INFOPLIST_FILE: "NO"
+        OTHER_LDFLAGS: ["-lresolv"]
+        TARGETED_DEVICE_FAMILY: "1"
