@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/banner.svg" alt="top-vpn banner" width="100%">
+</p>
+
 # SplitVPN
 
 **Geo-aware split-tunneling VPN for iOS and macOS, powered by an embedded sing-box engine and a FastAPI control plane.**
